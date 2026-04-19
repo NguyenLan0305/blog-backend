@@ -31,7 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-# ===== Secret / Config riêng =====
-application-secret.yml
-.env

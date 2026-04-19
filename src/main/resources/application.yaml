@@ -6,7 +6,10 @@ server:
 spring:
   application:
     name: blog-website
-
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     hibernate:
       ddl-auto: update
@@ -27,6 +30,9 @@ spring:
 
   profiles:
     active: secret
-
+cloudinary:
+  cloud-name: ${CLOUDINARY_NAME}
+  api-key: ${CLOUDINARY_KEY}
+  api-secret: ${CLOUDINARY_SECRET}
 jwt:
   signerKey: "b61be1b79d764b64a74332525cc9d1100c44011194a31cb568a3a297a990b406"
