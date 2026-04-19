@@ -30,15 +30,10 @@ public class User {
     String avatarUrl;
     LocalDateTime createdAt;
 
-   @ElementCollection(fetch = FetchType.EAGER)
-   @CollectionTable(
-           name = "user_roles",
-           joinColumns = @JoinColumn(name = "user_id"),
-           uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"})
-   )
-   @Column(name = "role")
-   @Builder.Default
-   Set<String> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Builder.Default
+    Set<UserRole> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "author",cascade = CascadeType.ALL)
             @Builder.Default

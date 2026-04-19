@@ -4,27 +4,29 @@ server:
     max-http-form-post-size: 10MB
 
 spring:
-  datasource:
-    url: "jdbc:mysql://localhost:3306/blog"
-    username: root
-    password: root
+  application:
+    name: blog-website
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-  application:
-    name: blog-website
+
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
     cache: false
-    web:
-      resources:
-        static-locations: classpath:/static/
+
+  web:
+    resources:
+      static-locations: classpath:/static/
+
   servlet:
     multipart:
       max-request-size: 10MB
+
   profiles:
     active: secret
+
 jwt:
   signerKey: "b61be1b79d764b64a74332525cc9d1100c44011194a31cb568a3a297a990b406"
