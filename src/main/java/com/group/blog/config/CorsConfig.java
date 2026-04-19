@@ -13,11 +13,17 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Cho phép tất cả các đường dẫn API
-                        .allowedOriginPatterns("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Các phương thức được phép
-                        .allowedHeaders("*") // Cho phép tất cả các Header (Authorization, Content-Type...)
-                        .allowCredentials(true); // Cho phép gửi kèm Cookie hoặc thông tin xác thực nếu cần
+                registry.addMapping("/**")
+                        // 🔥 ĐÃ SỬA: Xóa dấu * và điền đích danh các link được phép
+                        .allowedOrigins(
+                                "http://localhost:5500",      // Để bạn code trên máy tính
+                                "http://127.0.0.1:5500",      // Để bạn code trên máy tính
+                                "http://localhost:3000",
+                                "https://inkwell-blog-lime.vercel.app" // 🔥 Link Vercel chính thức của bạn
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
