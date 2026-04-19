@@ -19,7 +19,7 @@ public class CorsConfig {
                                 "http://localhost:5500",      // Để bạn code trên máy tính
                                 "http://127.0.0.1:5500",      // Để bạn code trên máy tính
                                 "http://localhost:3000",
-                                "https://inkwell-alpha-swart.vercel.app/"
+                                "https://inkwell-eight-pi.vercel.app"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
