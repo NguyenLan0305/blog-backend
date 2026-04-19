@@ -72,12 +72,17 @@ public class AuthenticationService {
        }
    }
 
-   private String  buildScope(User user){
-       StringJoiner stringJoiner=new StringJoiner(" ");
-       if(!CollectionUtils.isEmpty(user.getRoles()))
-           user.getRoles().forEach(stringJoiner::add);
-       return stringJoiner.toString();
-   }
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            // Duyệt qua tập hợp các đối tượng UserRole
+            // Lấy ra giá trị chuỗi (role) và nối lại
+            user.getRoles().forEach(userRole -> {
+                stringJoiner.add(userRole.getRole());
+            });
+        }
+        return stringJoiner.toString();
+    }
 
 
    public IntrospectResponse introspect(IntrospectRequest request) {
