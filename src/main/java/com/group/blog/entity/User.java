@@ -31,7 +31,7 @@ public class User {
     LocalDateTime createdAt;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
     @Builder.Default
     Set<UserRole> roles = new HashSet<>();
 

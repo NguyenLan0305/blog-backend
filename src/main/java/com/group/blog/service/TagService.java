@@ -1,5 +1,6 @@
 package com.group.blog.service;
 
+import com.group.blog.dto.request.CategoryRequest;
 import com.group.blog.dto.response.TagResponse;
 import com.group.blog.entity.Tag;
 import com.group.blog.repository.TagRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,17 +31,16 @@ public class TagService {
             return TagResponse.builder()
                     .id(tag.getId())
                     .name(tag.getName())
-                    // Không lưu DB, tự tạo Slug on-the-fly (chuẩn 3NF)
                     .slug(SlugUtils.generateSlug(tag.getName()) + "-" + tag.getId())
                     .postCount(postCount)
                     .build();
         }).toList();
     }
 
-    @org.springframework.transaction.annotation.Transactional
-    public TagResponse create(com.group.blog.dto.request.CategoryRequest request) { // Dùng tạm CategoryRequest vì nó cũng chỉ có mỗi field 'name'
+    @Transactional
+    public TagResponse create(CategoryRequest request) {
         if(tagRepository.existsByName(request.getName())) {
-            throw new RuntimeException("Tag is existed!"); // Hoặc dùng AppException của bạn
+            throw new RuntimeException("Tag is existed!");
         }
         Tag tag = new Tag();
         tag.setName(request.getName());
@@ -55,7 +56,7 @@ public class TagService {
     }
 
     @Transactional
-    public TagResponse update(java.util.UUID id, com.group.blog.dto.request.CategoryRequest request) {
+    public TagResponse update(UUID id, CategoryRequest request) {
         Tag tag = tagRepository.findById(id).orElseThrow(() -> new RuntimeException("Tag not found"));
         tag.setName(request.getName());
         tag = tagRepository.save(tag);

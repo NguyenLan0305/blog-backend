@@ -16,8 +16,7 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         // 🔥 ĐÃ SỬA: Xóa dấu * và điền đích danh các link được phép
                         .allowedOrigins(
-                                "http://localhost:5500",      // Để bạn code trên máy tính
-                                "http://127.0.0.1:5500",      // Để bạn code trên máy tính
+                                "http://localhost:5500",
                                 "http://localhost:3000",
                                 "https://inkwell-eight-pi.vercel.app"
                         )

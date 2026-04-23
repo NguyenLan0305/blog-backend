@@ -14,6 +14,7 @@ public enum ErrorCode {
     BLOG_NOT_FOUND(1010, "Bài viết không tồn tại"),
     UNAUTHORIZED(1011, "Bạn không có quyền thực hiện hành động này"),
     CATEGORY_EXITED(1012, "Danh mục đã tồn tại"),
+    PASSWORD_LOGIN_INCORRECT(1013, "Mật khẩu không chính xác"),
     ;
     private int code;
     private String message;

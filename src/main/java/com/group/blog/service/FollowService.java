@@ -34,7 +34,7 @@ public class FollowService {
 
         // Không cho phép tự follow chính mình
         if (currentUsername.equals(targetUsername)) {
-            throw new RuntimeException("Bạn không thể tự theo dõi chính mình!"); // Có thể thay bằng AppException
+            throw new RuntimeException("Bạn không thể tự theo dõi chính mình!");
         }
 
         User follower = userRepository.findByUsername(currentUsername)
@@ -49,7 +49,6 @@ public class FollowService {
         } else {
             UserFollow newFollow = UserFollow.builder().follower(follower).following(following).build();
             userFollowRepository.save(newFollow); // Chưa follow -> Follow
-            // 🔥 GỬI THÔNG BÁO:
             notificationService.createNotification(
                     following, // Người nhận
                     "@" + currentUsername + " started following you.", // Lời nhắn
@@ -64,7 +63,6 @@ public class FollowService {
     public List<UserResponse> getFollowers(String username) {
         User targetUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
-
         return userFollowRepository.findByFollowingOrderByCreatedAtDesc(targetUser)
                 .stream()
                 .map(uf -> enrichUserResponse(uf.getFollower())) // Map entity người đi follow thành DTO

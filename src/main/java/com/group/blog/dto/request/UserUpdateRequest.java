@@ -14,7 +14,10 @@ import java.util.Set;
 public class UserUpdateRequest {
     @Email(message = "EMAIL_INVALID")
     String email;
+
     String bio;
     String avatarUrl;
+
+    // admin mới sửa được role của người dùng
     Set<String> roles;
 }

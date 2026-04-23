@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-
+import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/blogs") // Định tuyến gốc cho tất cả API trong này
 @RequiredArgsConstructor  // Dùng Required thay vì AllArgs cho chuẩn
@@ -41,9 +41,17 @@ public class BlogController {
 
     // 3. Lấy chi tiết 1 bài viết theo ID
     @GetMapping("/{id}")
-    public ApiResponse<BlogResponse> getBlogById(@PathVariable UUID id) {
+    public ApiResponse<BlogResponse> getBlogById(
+            @PathVariable UUID id, HttpServletRequest request) { // Thêm request vào đây
+
+        // Logic lấy IP (hỗ trợ cả khi chạy qua Load Balancer/Nginx)
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        // Gọi Service và truyền thêm ipAddress
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.getBlogById(id))
+                .result(blogService.getBlogById(id, ipAddress))
                 .build();
     }
 

@@ -18,7 +18,7 @@ public interface UserMapper {
 
     UserResponse toUserResponse(User user);
 
-    // 🔥 BẢO MAPSTRUCT BỎ QUA TRƯỜNG ROLES Ở ĐÂY
+    // BẢO MAPSTRUCT BỎ QUA TRƯỜNG ROLES
     @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 

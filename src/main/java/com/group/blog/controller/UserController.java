@@ -43,7 +43,6 @@ public class UserController {
                 .build();
     }
 
-    // 🔥 ĐÃ ĐƯỢC CHUYỂN LÊN ĐÂY: API cụ thể phải đặt lên trên!
     @GetMapping("/my-profile")
     public ApiResponse<UserResponse> getMyProfile() {
         return ApiResponse.<UserResponse>builder()
@@ -66,7 +65,6 @@ public class UserController {
                 .build();
     }
 
-    // ⚠️ API chứa biến (PathVariable) phải đặt ở dưới cùng!
     @GetMapping("/{userId}")
     ApiResponse<UserResponse> getUser(@PathVariable("userId") UUID userId) {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();

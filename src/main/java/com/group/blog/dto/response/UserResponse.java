@@ -24,5 +24,5 @@ public class UserResponse {
     LocalDateTime createdAt;
     long totalFollowers;
     long totalFollowing;
-    boolean isFollowedByCurrentUser; // Dùng để đổi màu nút Follow / Unfollow
+    boolean isFollowedByCurrentUser; // kiểm tra xem user hiện tại theo dõi user nào đó không
 }

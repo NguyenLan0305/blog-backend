@@ -35,10 +35,9 @@ public class InteractionService {
     UserMapper userMapper;
     BookmarkRepository bookmarkRepository;
     NotificationService notificationService;
-    // 🔥 BỔ SUNG: Tiêm BlogMapper vào để map dữ liệu Bookmark
     BlogMapper blogMapper;
 
-    // ================= LIKE =================
+
     @Transactional
     public void toggleLike(UUID blogId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -67,14 +66,14 @@ public class InteractionService {
         }
     }
 
-    // ================= COMMENT =================
-    // 1. Lấy danh sách comment của 1 bài viết
+
+    // Lấy danh sách comment của 1 bài viết
     public List<CommentResponse> getCommentsByBlogId(UUID blogId) {
         List<Comment> rootComments = commentRepository.findByBlogIdAndParentIsNullOrderByCreatedAtDesc(blogId);
         return rootComments.stream().map(this::mapToCommentResponse).collect(Collectors.toList());
     }
 
-    // 2. Thêm Comment / Reply
+    //  Comment / Reply
     @Transactional
     public CommentResponse addComment(UUID blogId, CommentRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -92,8 +91,8 @@ public class InteractionService {
         if (request.getParentId() != null) {
             Comment parent = commentRepository.findById(request.getParentId())
                     .orElseThrow(() -> new RuntimeException("Parent comment not found"));
-            // Ràng buộc: Không cho reply lồng nhau quá sâu (Tùy chọn)
-            if(parent.getParent() != null) {
+            // Ràng buộc: Không cho reply lồng nhau quá sâu
+            if (parent.getParent() != null) {
                 // Nếu parent đã là 1 reply, ta gắn comment mới vào cùng cấp với parent đó luôn
                 comment.setParent(parent.getParent());
             } else {
@@ -136,7 +135,7 @@ public class InteractionService {
         String commentAuthor = comment.getUser().getUsername();
         String blogAuthor = comment.getBlog().getAuthor().getUsername();
 
-        // CHỈ CÓ: Tác giả của comment HOẶC Tác giả của bài viết mới được quyền xóa
+        //chỉ có Tác giả của comment HOẶC Tác giả của bài viết mới được quyền xóa
         if (!currentUsername.equals(commentAuthor) && !currentUsername.equals(blogAuthor)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
@@ -144,7 +143,6 @@ public class InteractionService {
         commentRepository.delete(comment);
     }
 
-    // Hàm phụ trợ: Đổi từ Entity sang DTO Đệ quy
     private CommentResponse mapToCommentResponse(Comment comment) {
         UserResponse userResponse = userMapper.toUserResponse(comment.getUser());
 
@@ -162,7 +160,6 @@ public class InteractionService {
                 .build();
     }
 
-    // ================= BOOKMARK =================
     @Transactional
     public void toggleBookmark(UUID blogId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -182,14 +179,12 @@ public class InteractionService {
     public List<BlogResponse> getMyBookmarks() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         List<Bookmark> bookmarks = bookmarkRepository.findByUserUsernameOrderByCreatedAtDesc(username);
-
-        // 🔥 SỬA LẠI: Gọi hàm helper mapToBlogResponse ở dưới
         return bookmarks.stream()
                 .map(b -> mapToBlogResponse(b.getBlog()))
                 .toList();
     }
 
-    // 🔥 BỔ SUNG: Hàm Helper chuyển Blog thành BlogResponse kèm theo Slug
+
     private BlogResponse mapToBlogResponse(Blog blog) {
         BlogResponse response = blogMapper.toBlogResponse(blog);
         // Tạo slug chuẩn để Frontend có thể click vào xem chi tiết bài viết

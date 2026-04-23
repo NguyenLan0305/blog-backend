@@ -18,7 +18,7 @@ public class PasswordChangeRequest {
     @Size(min = 8, message = "INVALID_PASSWORD")
     String newPassword;
 
-    // Optional: Có thể thêm trường này để validate 2 mật khẩu khớp nhau ngay từ DTO
+    //validate 2 mật khẩu khớp nhau ngay từ DTO
     @NotBlank(message = "CONFIRM_PASSWORD_REQUIRED")
     String confirmPassword;
 }

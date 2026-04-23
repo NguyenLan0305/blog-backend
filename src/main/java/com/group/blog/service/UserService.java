@@ -24,125 +24,121 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level= AccessLevel.PRIVATE,makeFinal=true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
 
- UserRepository userRepository;
- UserMapper userMapper;
- PasswordEncoder passwordEncoder;
- FollowService followService;
+    UserRepository userRepository;
+    UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
+    FollowService followService;
 
- @Transactional
- public UserResponse createUser(UserCreatetionRequest request){
-  if(userRepository.existsByUsername(request.getUsername()))
-   throw new AppException(ErrorCode.USER_EXITED);
+    @Transactional
+    public UserResponse createUser(UserCreatetionRequest request) {
+        if (userRepository.existsByUsername(request.getUsername()))
+            throw new AppException(ErrorCode.USER_EXITED);
 
-  User u = userMapper.toUser(request);
-  u.setPassword(passwordEncoder.encode(request.getPassword()));
+        User u = userMapper.toUser(request);
+        u.setPassword(passwordEncoder.encode(request.getPassword()));
 
-  // 🔥 SỬA CHỖ NÀY: Tạo đối tượng UserRole thay vì gán chuỗi String
-  UserRole defaultRole = UserRole.builder()
-          .role(Role.USER.name())
-          .user(u) // Móc ngược lại vào user
-          .build();
-  u.getRoles().add(defaultRole);
+        UserRole defaultRole = UserRole.builder()
+                .role(Role.USER.name())
+                .user(u)
+                .build();
+        u.getRoles().add(defaultRole);
 
-  User savedUser = userRepository.save(u);
-  return userMapper.toUserResponse(savedUser);
- }
+        User savedUser = userRepository.save(u);
+        return userMapper.toUserResponse(savedUser);
+    }
 
- @Transactional
- public UserResponse updateUser(UUID id, UserUpdateRequest request){
-  User u = userRepository.findById(id)
-          .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
+    @Transactional
+    public UserResponse updateUser(UUID id, UserUpdateRequest request) {
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
+        userMapper.updateUser(u, request);
+        // nếu có cập nhật quyền
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            u.getRoles().clear(); // Xóa sạch quyền cũ
 
-  // 1. Vẫn cho Mapper tự cập nhật email, bio...
-  userMapper.updateUser(u, request);
+            // Duyệt qua danh sách chữ (VD: "ADMIN", "USER") truyền từ request
+            request.getRoles().forEach(roleName -> {
+                UserRole newRole = UserRole.builder()
+                        .role(roleName)
+                        .user(u)
+                        .build();
+                u.getRoles().add(newRole);
+            });
+        }
 
-  // 2. 🔥 SỬA CHỖ NÀY: Chuyển từ List<String> sang Set<UserRole>
-  if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-   u.getRoles().clear(); // Xóa sạch quyền cũ
+        // Lưu vào Database
+        return followService.enrichUserResponse(userRepository.save(u));
+    }
 
-   // Duyệt qua danh sách chữ (VD: "ADMIN", "USER") truyền từ request
-   request.getRoles().forEach(roleName -> {
-    UserRole newRole = UserRole.builder()
-            .role(roleName)
-            .user(u) // Gắn Role này cho User hiện tại
-            .build();
-    u.getRoles().add(newRole); // Đắp quyền mới vào
-   });
-  }
+    public void deleteUser(UUID id) {
+        if (!userRepository.existsById(id)) throw new AppException(ErrorCode.USER_NOT_EXITED);
+        userRepository.deleteById(id);
+    }
 
-  // 3. Lưu vào Database
-  return followService.enrichUserResponse(userRepository.save(u));
- }
+    public List<UserResponse> getUsers() {
+        return userRepository.findAll().stream().map(followService::enrichUserResponse).toList();
+    }
 
- public void deleteUser(UUID id){
-  if(!userRepository.existsById(id)) throw new AppException(ErrorCode.USER_NOT_EXITED);
-  userRepository.deleteById(id);
- }
+    public UserResponse getUser(UUID id) {
+        return followService.enrichUserResponse(userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED)));
+    }
 
- public List<UserResponse> getUsers(){
-  return userRepository.findAll().stream().map(followService::enrichUserResponse).toList();
- }
+    public void changePassword(PasswordChangeRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String currentUsername = context.getAuthentication().getName();
 
- public UserResponse getUser(UUID id){
-  return followService.enrichUserResponse(userRepository.findById(id).orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXITED)));
- }
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
 
- public void changePassword(PasswordChangeRequest request) {
-  var context = SecurityContextHolder.getContext();
-  String currentUsername = context.getAuthentication().getName();
+        boolean isMatch = passwordEncoder.matches(request.getOldPassword(), user.getPassword());
+        if (!isMatch) {
+            throw new AppException(ErrorCode.PASSWORD_INCORRECT);
+        }
 
-  User user = userRepository.findByUsername(currentUsername)
-          .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
+        }
 
-  boolean isMatch = passwordEncoder.matches(request.getOldPassword(), user.getPassword());
-  if (!isMatch) {
-   throw new AppException(ErrorCode.PASSWORD_INCORRECT);
-  }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 
-  if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-   throw new AppException(ErrorCode.PASSWORD_NOT_MATCH);
-  }
+    public UserResponse getMyProfile() {
+        var context = SecurityContextHolder.getContext();
+        String currentUsername = context.getAuthentication().getName();
 
-  user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-  userRepository.save(user);
- }
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
 
- public UserResponse getMyProfile() {
-  var context = SecurityContextHolder.getContext();
-  String currentUsername = context.getAuthentication().getName();
+        return followService.enrichUserResponse(user);
+    }
 
-  User user = userRepository.findByUsername(currentUsername)
-          .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
+    @Transactional
+    public UserResponse updateMyProfile(UserUpdateRequest request) {
+        var context = SecurityContextHolder.getContext();
+        String currentUsername = context.getAuthentication().getName();
 
-  return followService.enrichUserResponse(user);
- }
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
 
- @Transactional
- public UserResponse updateMyProfile(UserUpdateRequest request) {
-  var context = SecurityContextHolder.getContext();
-  String currentUsername = context.getAuthentication().getName();
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getBio() != null) user.setBio(request.getBio());
+        if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
 
-  User user = userRepository.findByUsername(currentUsername)
-          .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
+        return followService.enrichUserResponse(userRepository.save(user));
+    }
 
-  if (request.getEmail() != null) user.setEmail(request.getEmail());
-  if (request.getBio() != null) user.setBio(request.getBio());
-  if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
 
-  return followService.enrichUserResponse(userRepository.save(user));
- }
+        return followService.enrichUserResponse(user);
+    }
 
- public UserResponse getUserByUsername(String username) {
-  User user = userRepository.findByUsername(username)
-          .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
-
-  return followService.enrichUserResponse(user);
- }
-
- public long countTotalUsers() {
-  return userRepository.count();
- }
+    public long countTotalUsers() {
+        return userRepository.count();
+    }
 }
