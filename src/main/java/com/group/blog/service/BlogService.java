@@ -344,30 +344,21 @@ public class BlogService {
 
         //KIỂM TRA TRẠNG THÁI LIKE CỦA USER HIỆN TẠI
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        // Kiểm tra xem request này có phải từ User đã đăng nhập không (bỏ qua Khách vãng lai 'anonymousUser')
         if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
             String currentUsername = authentication.getName();
-            // Gọi xuống DB check xem có record nào khớp blogId và username không
-            boolean isLiked = blogLikeRepository.existsByBlogIdAndUserUsername(blog.getId(), currentUsername);
-            response.setLikedByCurrentUser(isLiked);
-        } else {
-            // Khách chưa đăng nhập thì mặc định là chưa like
-            response.setLikedByCurrentUser(false);
-        }
-
-        if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
-            String currentUsername = authentication.getName();
-
+            // 1. Kiểm tra trạng thái Like
             boolean isLiked = blogLikeRepository.existsByBlogIdAndUserUsername(blog.getId(), currentUsername);
             response.setLikedByCurrentUser(isLiked);
 
-            // user đã lưu bài viết đó chưa?
+            // 2. Kiểm tra trạng thái Bookmark
             boolean isBookmarked = bookmarkRepository.existsByBlogIdAndUserUsername(blog.getId(), currentUsername);
             response.setBookmarkedByCurrentUser(isBookmarked);
         } else {
+            // Khách chưa đăng nhập
             response.setLikedByCurrentUser(false);
-            response.setBookmarkedByCurrentUser(false); // Khách thì chưa bookmark
+            response.setBookmarkedByCurrentUser(false);
         }
+
         return response;
     }
 

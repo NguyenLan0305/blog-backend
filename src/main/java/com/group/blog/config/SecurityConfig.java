@@ -1,6 +1,8 @@
 package com.group.blog.config;
 
 import com.group.blog.enums.Role;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -28,7 +32,8 @@ public class SecurityConfig {
     private final String[] PUBLIC_POST_ENDPOINTS = {
             "/users",
             "/auth/login",
-            "/auth/introspect"
+            "/auth/introspect",
+            "/auth/logout"
     };
 
     // Các API và View dùng phương thức GET được phép truy cập tự do
@@ -87,7 +92,9 @@ public class SecurityConfig {
 
         // Cấu hình giải mã JWT Token
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
+                oauth2
+                        .bearerTokenResolver(bearerTokenResolver())
+                        .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
         );
 
@@ -100,6 +107,29 @@ public class SecurityConfig {
         );
 
         return httpSecurity.build();
+    }
+
+    //cách lấy JWT từ Cookie
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return new BearerTokenResolver() {
+            @Override
+            public String resolve(HttpServletRequest request) {
+                // 1. Ưu tiên tìm trong Cookie trước
+                if (request.getCookies() != null) {
+                    for (Cookie cookie : request.getCookies()) {
+                        if ("accessToken".equals(cookie.getName())) {
+                            return cookie.getValue();
+                        }
+                    }
+                }
+
+                // 2. Fallback: Nếu không có Cookie, thử tìm trong Header như cũ
+                //test API bằng Postman)
+                DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
+                return defaultResolver.resolve(request);
+            }
+        };
     }
 
     @Bean
