@@ -70,7 +70,7 @@ public class BlogService {
             }
             blog.setTags(finalTags);
         }
-        return enrichBlogResponse(blogRepository.save(blog));
+        return toMinimalResponse(blogRepository.save(blog));
     }
 
     // 2. Cập nhật bài viết (Xử lý tách biệt Luồng Nháp và Luồng Xuất bản)
@@ -147,7 +147,7 @@ public class BlogService {
             blog.setTags(finalTags);
         }
 
-        return enrichBlogResponse(blogRepository.save(blog));
+        return toMinimalResponse(blogRepository.save(blog));
     }
 
     // 3. Lấy chi tiết 1 bài viết
@@ -362,5 +362,14 @@ public class BlogService {
         return response;
     }
 
-
+    private BlogResponse toMinimalResponse(Blog blog) {
+        BlogResponse response = new BlogResponse();
+        response.setId(blog.getId());
+        response.setTitle(blog.getTitle());
+        response.setDraft(blog.isDraft());
+        // Tạo Slug để Frontend có thể chuyển trang ngay lập tức
+        String generatedSlug = SlugUtils.generateSlug(blog.getTitle()) + "-" + blog.getId();
+        response.setSlug(generatedSlug);
+        return response;
+    }
 }

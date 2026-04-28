@@ -36,7 +36,7 @@ public class AuthenticationController {
                 .secure(true)         // Yêu cầu HTTPS
                 .path("/")            // Cookie có tác dụng ở mọi endpoint
                 .maxAge(60 * 60)      // Thời gian sống 1 giờ
-                // Frontend và Backend khác domain (vd Frontend Vercel, Backend Render) -> Dùng "None"
+                // Frontend và Backend khác domain-> Dùng "None"
                 // Nếu chạy chung 1 domain hoặc localhost -> Dùng "Lax" hoặc "Strict"
                 .sameSite("None")
                 .build();

@@ -17,7 +17,7 @@ import java.util.UUID;
 import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/blogs") // Định tuyến gốc cho tất cả API trong này
-@RequiredArgsConstructor  // Dùng Required thay vì AllArgs cho chuẩn
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BlogController {
 

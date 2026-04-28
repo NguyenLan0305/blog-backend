@@ -120,7 +120,6 @@ public class UserService {
     public UserResponse updateMyProfile(UserUpdateRequest request) {
         var context = SecurityContextHolder.getContext();
         String currentUsername = context.getAuthentication().getName();
-
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXITED));
 
@@ -128,7 +127,7 @@ public class UserService {
         if (request.getBio() != null) user.setBio(request.getBio());
         if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
 
-        return followService.enrichUserResponse(userRepository.save(user));
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 
     public UserResponse getUserByUsername(String username) {
@@ -141,4 +140,5 @@ public class UserService {
     public long countTotalUsers() {
         return userRepository.count();
     }
+
 }

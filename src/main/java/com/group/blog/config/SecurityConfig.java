@@ -81,6 +81,9 @@ public class SecurityConfig {
                         .requestMatchers(ADMIN_ENDPOINTS).hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.GET, "/users").hasRole(Role.ADMIN.name())
 
+                        //Chỉ Admin mới được sửa thông tin User khác (bao gồm đổi Role)
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasRole(Role.ADMIN.name())
+
                         // Chặn quyền Thêm/Sửa/Xóa Categories & Tags chỉ dành cho Admin
                         .requestMatchers(HttpMethod.POST, "/categories", "/tags").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.PUT, "/categories/**", "/tags/**").hasRole(Role.ADMIN.name())
